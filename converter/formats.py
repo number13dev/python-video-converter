@@ -89,6 +89,13 @@ class MkvFormat(BaseFormat):
     format_name = 'mkv'
     ffmpeg_format_name = 'matroska'
 
+class HevcFormat(BaseFormat):
+
+    """
+    Matroska format, often used with hevc video.
+    """
+    format_name = 'hevc'
+    ffmpeg_format_name = 'hevc'
 
 class WebmFormat(BaseFormat):
 
