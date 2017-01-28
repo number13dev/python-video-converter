@@ -122,7 +122,7 @@ class Converter(object):
 
         # aggregate all options
         optlist = audio_options + video_options + subtitle_options + \
-            format_options
+                  format_options
 
         if twopass == 1:
             optlist.extend(['-pass', '1'])
@@ -201,15 +201,20 @@ class Converter(object):
             raise ConverterError('Zero-length media')
 
         if twopass:
+            null_pipe = None
+            if os.name == 'nt':
+                null_pipe = "NUL"
+            elif os.name == 'posix':
+                null_pipe = '/dev/null'
             optlist1 = self.parse_options(options, 1)
-            for timecode in self.ffmpeg.convert(infile, outfile, optlist1,
+            for timecode in self.ffmpeg.convert(infile, null_pipe, optlist1,
                                                 timeout=timeout, preopts=preoptlist):
-                yield float(timecode) / info.format.duration
+                yield (float(timecode) / info.format.duration) / 2
 
             optlist2 = self.parse_options(options, 2)
             for timecode in self.ffmpeg.convert(infile, outfile, optlist2,
                                                 timeout=timeout, preopts=preoptlist):
-                yield 0.5 + float(timecode) / info.format.duration
+                yield 0.5 + (float(timecode) / info.format.duration) / 2
         else:
             optlist = self.parse_options(options, twopass)
             for timecode in self.ffmpeg.convert(infile, outfile, optlist,
@@ -235,8 +240,10 @@ class Converter(object):
         current_directory = os.getcwd()
         os.chdir(working_directory)
         optlist = [
-            "-flags", "-global_header", "-f", "segment", "-segment_time", "1", "-segment_list", output_file, "-segment_list_type", "m3u8", "-segment_format", "mpegts",
-            "-segment_list_entry_prefix", "%s/" % output_directory, "-map", "0", "-map", "-0:d", "-bsf:v", "h264_mp4toannexb", "-vcodec", "copy", "-acodec", "copy", "-bsf:a", "aac_adtstoasc"
+            "-flags", "-global_header", "-f", "segment", "-segment_time", "1", "-segment_list", output_file,
+            "-segment_list_type", "m3u8", "-segment_format", "mpegts",
+            "-segment_list_entry_prefix", "%s/" % output_directory, "-map", "0", "-map", "-0:d", "-bsf:v",
+            "h264_mp4toannexb", "-vcodec", "copy", "-acodec", "copy", "-bsf:a", "aac_adtstoasc"
         ]
         outfile = "%s/media%%05d.ts" % output_directory
         for timecode in self.ffmpeg.convert(infile, outfile, optlist, timeout=timeout):

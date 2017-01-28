@@ -241,7 +241,7 @@ class VideoCodec(BaseCodec):
         filters = safe['aspect_filters']
 
         optlist = ['-vcodec', self.ffmpeg_codec_name]
-        optlist.extend(['-pix_fmt', str(safe['pix_fmt'] if 'pix_fmt' in safe else 'yuv420p')])
+        # optlist.extend(['-pix_fmt', str(safe['pix_fmt'] if 'pix_fmt' in safe else 'yuv420p')])
         if 'fps' in safe:
             optlist.extend(['-r', str(safe['fps'])])
         if 'keyframe_interval' in safe:
