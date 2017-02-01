@@ -350,7 +350,7 @@ class H264Codec(VideoCodec):
         return optlist
 
 class HevcNvenc(VideoCodec):
-    codec_name = 'h265'
+    codec_name = 'nvidia_h265'
     ffmpeg_codec_name = 'hevc_nvenc'
     encoder_options = VideoCodec.encoder_options.copy()
     encoder_options.update({
