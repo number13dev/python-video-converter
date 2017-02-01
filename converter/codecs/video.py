@@ -349,6 +349,27 @@ class H264Codec(VideoCodec):
             optlist.extend(['-tune', safe['tune']])
         return optlist
 
+class HevcNvenc(VideoCodec):
+    codec_name = 'h265'
+    ffmpeg_codec_name = 'hevc_nvenc'
+    encoder_options = VideoCodec.encoder_options.copy()
+    encoder_options.update({
+        'preset': str,
+        'rc': str,
+    })
+
+    def _codec_specific_parse_options(self, safe):
+        return safe
+
+    def _codec_specific_produce_ffmpeg_list(self, safe):
+        optlist = []
+        if 'preset' in safe:
+            optlist.extend(['-preset', safe['preset']])
+        if 'rc' in safe:
+            optlist.extend(['-rc:v', str(safe['rc'])])
+            optlist.extend(['-qmin:v', str(safe['10'])])
+        return optlist
+
 class H265Codec(VideoCodec):
     """
     H.264/AVC video codec.
