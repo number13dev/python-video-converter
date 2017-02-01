@@ -154,6 +154,8 @@ class FdkAacCodec(AudioCodec):
         optlist = []
         if 'quality' in safe:
             optlist.extend(['-vbr', str(safe['quality'])])
+        if 'profile' in safe:
+            optlist.extend(['-profile:a', str(safe['profile'])])
         return optlist
 
 
