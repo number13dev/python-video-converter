@@ -349,6 +349,7 @@ class H264Codec(VideoCodec):
             optlist.extend(['-tune', safe['tune']])
         return optlist
 
+
 class HevcNvenc(VideoCodec):
     codec_name = 'nvidia_h265'
     ffmpeg_codec_name = 'hevc_nvenc'
@@ -369,6 +370,7 @@ class HevcNvenc(VideoCodec):
             optlist.extend(['-rc:v', str(safe['rc'])])
             optlist.extend(['-qmin:v', str(safe['10'])])
         return optlist
+
 
 class H265Codec(VideoCodec):
     """
@@ -408,6 +410,7 @@ class H265Codec(VideoCodec):
         if 'tune' in safe:
             optlist.extend(['-tune', safe['tune']])
         return optlist
+
 
 class VaapiH264Codec(VideoCodec):
     """
