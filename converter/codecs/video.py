@@ -368,7 +368,7 @@ class HevcNvenc(VideoCodec):
             optlist.extend(['-preset', safe['preset']])
         if 'rc' in safe:
             optlist.extend(['-rc:v', str(safe['rc'])])
-            optlist.extend(['-qmin:v', str(safe['10'])])
+            optlist.extend(['-qmin:v', str('10')])
         return optlist
 
 
