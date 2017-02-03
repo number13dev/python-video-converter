@@ -129,7 +129,29 @@ class AacCodec(AudioCodec):
             optlist.extend(['-qscale:a', str(safe['quality'])])
         return optlist
 
+class OpusCodec(AudioCodec):
 
+    """
+    Opus audio codec.
+    """
+    codec_name = 'opus'
+    ffmpeg_codec_name = 'opus'
+    encoder_options = AudioCodec.encoder_options.copy()
+    encoder_options.update({
+        'vbr': str,
+    })
+
+    def _codec_specific_parse_options(self, safe):
+        return safe
+
+    def _codec_specific_produce_ffmpeg_list(self, safe):
+        optlist = []
+        if 'vbr' in safe:
+            optlist.extend(['-vbr', str(safe['vbr'])])
+        if 'application' in safe:
+            optlist.extend(['-application', str(safe['application'])])
+        return optlist
+    
 class FdkAacCodec(AudioCodec):
 
     """
