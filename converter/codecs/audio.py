@@ -161,7 +161,9 @@ class FdkAacCodec(AudioCodec):
     ffmpeg_codec_name = 'libfdk_aac'
     encoder_options = AudioCodec.encoder_options.copy()
     encoder_options.update({
-        'quality': int,  # audio quality. Range is 1-5(highest quality)
+        'quality': int,
+        'profile': str,
+        # audio quality. Range is 1-5(highest quality)
         # Default is 4
     })
 
