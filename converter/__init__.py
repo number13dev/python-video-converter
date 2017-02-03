@@ -62,6 +62,10 @@ class Converter(object):
         if format_options is None:
             raise ConverterError('Unknown container format error')
 
+        extra_options = ''
+        if 'extra_options' in opt:
+            extra_options = " " + opt['extra_options'] + " "
+
         if 'audio' not in opt and 'video' not in opt:
             raise ConverterError('Neither audio nor video streams requested')
 
@@ -121,7 +125,7 @@ class Converter(object):
                 format_options.extend(['-map', str(m)])
 
         # aggregate all options
-        optlist = audio_options + video_options + subtitle_options + \
+        optlist = extra_options + audio_options + video_options + subtitle_options + \
                   format_options
 
         if twopass == 1:

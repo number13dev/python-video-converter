@@ -182,7 +182,7 @@ class TestFFMpeg(unittest.TestCase):
         self.assertRaisesSpecific(ffmpeg.FFMpegConvertError, list, conv)
 
     def test_ffmpeg_thumbnail(self):
-        f = ffmpeg.FFMpeg(ffmpeg_path="ffmpeg-3.2.2", ffprobe_path="ffprobe-3.2.2")
+        f = ffmpeg.FFMpeg(ffmpeg_path="ffmpeg", ffprobe_path="ffprobe")
         thumb = self.shot_file_path
         thumb2 = self.shot2_file_path
 
@@ -353,7 +353,7 @@ class TestFFMpeg(unittest.TestCase):
             ['-vcodec', 'msmpeg4', '-pix_fmt', 'yuv420p'], codecs.WmvCodec().parse_options({'codec': 'wmv'}))
 
     def test_converter(self):
-        c = Converter(ffmpeg_path="ffmpeg-3.2.2", ffprobe_path="ffprobe-3.2.2")
+        c = Converter(ffmpeg_path="ffmpeg", ffprobe_path="ffprobe")
 
         self.assertRaisesSpecific(ConverterError, c.parse_options, None)
         self.assertRaisesSpecific(ConverterError, c.parse_options, {})
