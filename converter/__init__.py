@@ -62,7 +62,7 @@ class Converter(object):
         if format_options is None:
             raise ConverterError('Unknown container format error')
 
-        extra_options = ''
+        extra_options = []
         if 'extra_options' in opt:
             extra_options = [opt['extra_options']]
 
