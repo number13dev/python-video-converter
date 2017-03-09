@@ -211,19 +211,26 @@ class Converter(object):
             elif os.name == 'posix':
                 null_pipe = '/dev/null'
             optlist1 = self.parse_options(options, 1)
-            for timecode in self.ffmpeg.convert(infile, null_pipe, optlist1,
+            for process_info in self.ffmpeg.convert(infile, null_pipe, optlist1,
                                                 timeout=timeout, preopts=preoptlist):
-                yield (float(timecode) / info.format.duration) / 2
+                process_info['duration'] = info.format.duration
+                process_info['pass'] = 1
+                yield process_info
+                # yield (float(timecode) / info.format.duration) / 2
 
             optlist2 = self.parse_options(options, 2)
-            for timecode in self.ffmpeg.convert(infile, outfile, optlist2,
+            for process_info in self.ffmpeg.convert(infile, outfile, optlist2,
                                                 timeout=timeout, preopts=preoptlist):
-                yield 0.5 + (float(timecode) / info.format.duration) / 2
+                process_info['duration'] = info.format.duration
+                process_info['pass'] = 2
+                yield process_info
+                # yield 0.5 + (float(timecode) / info.format.duration) / 2
         else:
             optlist = self.parse_options(options, twopass)
-            for timecode in self.ffmpeg.convert(infile, outfile, optlist,
+            for process_info in self.ffmpeg.convert(infile, outfile, optlist,
                                                 timeout=timeout, preopts=preoptlist):
-                yield float(timecode) / info.format.duration
+                process_info['duration'] = info.format.duration
+                yield process_info
 
     def segment(self, infile, working_directory, output_file, output_directory, timeout=10):
         if not os.path.exists(infile):

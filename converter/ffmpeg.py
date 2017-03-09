@@ -18,7 +18,6 @@ class FFMpegError(Exception):
 
 
 class FFMpegConvertError(Exception):
-
     def __init__(self, message, cmd, output, details=None, pid=0):
         """
         @param    message: Error message.
@@ -50,7 +49,6 @@ class FFMpegConvertError(Exception):
 
 
 class MediaFormatInfo(object):
-
     """
     Describes the media container format. The attributes are:
       * format - format (short) name (eg. "ogg")
@@ -90,7 +88,6 @@ class MediaFormatInfo(object):
 
 
 class MediaStreamInfo(object):
-
     """
     Describes one stream inside a media file. The general
     attributes are:
@@ -231,7 +228,7 @@ class MediaStreamInfo(object):
 
         if self.type == 'audio':
             d = 'type=%s, codec=%s, channels=%d, rate=%.0f' % (self.type,
-                self.codec, self.audio_channels, self.audio_samplerate)
+                                                               self.codec, self.audio_channels, self.audio_samplerate)
         elif self.type == 'video':
             d = 'type=%s, codec=%s, width=%d, height=%d, fps=%.1f' % (
                 self.type, self.codec, self.video_width, self.video_height,
@@ -250,7 +247,6 @@ class MediaStreamInfo(object):
 
 
 class MediaInfo(object):
-
     """
     Information about media object, as parsed by ffprobe.
     The attributes are:
@@ -328,7 +324,6 @@ class MediaInfo(object):
 
 
 class FFMpeg(object):
-
     """
     FFMPeg wrapper object, takes care of calling the ffmpeg binaries,
     passing options and parsing the output.
@@ -375,7 +370,7 @@ class FFMpeg(object):
     def _spawn(cmds):
         logger.debug('Spawning ffmpeg with command: ' + ' '.join(cmds))
         return Popen(cmds, shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                     close_fds=True)
+                     close_fds=True if (os.name == 'posix') else False)
 
     def probe(self, fname, posters_as_video=True):
         """
@@ -453,12 +448,12 @@ class FFMpeg(object):
 
         if timeout:
             def on_sigvtalrm(*_):
-                signal.signal(signal.SIGVTALRM, signal.SIG_DFL)
+                signal.signal(signal.SIGVTALRM if (os.name == 'posix') else signal.SIGFPE, signal.SIG_DFL)
                 if p.poll() is None:
                     p.kill()
                 raise Exception('timed out while waiting for ffmpeg')
 
-            signal.signal(signal.SIGVTALRM, on_sigvtalrm)
+            signal.signal(signal.SIGVTALRM if (os.name == 'posix') else signal.SIGFPE, on_sigvtalrm)
 
         yielded = False
         buf = ''
@@ -478,14 +473,25 @@ class FFMpeg(object):
                 return timecode
             return None
 
+        pat2 = re.compile(r'fps=(?: |)([0-9.]+)')
+
+        def get_speedcode(out):
+            tmp = pat2.findall(out)
+            if len(tmp) == 1:
+                return tmp[0]
+            return None
+
         while True:
+
             if timeout:
-                signal.setitimer(signal.ITIMER_VIRTUAL, timeout)
+                if os.name == 'posix':
+                    signal.setitimer(signal.ITIMER_VIRTUAL, timeout)
 
             ret = p.stderr.read(10)
 
             if timeout:
-                signal.setitimer(signal.ITIMER_VIRTUAL, 0)
+                if os.name == 'posix':
+                    signal.setitimer(signal.ITIMER_VIRTUAL, 0)
 
             if not ret:
                 break
@@ -496,9 +502,17 @@ class FFMpeg(object):
             if '\r' in buf:
                 line, buf = buf.split('\r', 1)
                 timecode = get_timecode(line)
+                speedcode = get_speedcode(line)
+
+                d = {}
                 if timecode is not None:
+                    d['timecode'] = timecode
+                if speedcode is not None:
+                    d['speedcode'] = speedcode
+                if len(d) > 0:
                     yielded = True
-                    yield timecode
+                    yield d
+
         if not yielded:
             # There may have been a single time, check it
             timecode = get_timecode(total_output)
@@ -507,7 +521,8 @@ class FFMpeg(object):
                 yield timecode
 
         if timeout:
-            signal.signal(signal.SIGALRM, signal.SIG_DFL)
+            if os.name == 'posix':
+                signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
         p.communicate()  # wait for process to exit
 
