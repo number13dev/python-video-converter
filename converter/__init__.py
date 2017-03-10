@@ -130,8 +130,11 @@ class Converter(object):
 
         if twopass == 1:
             optlist.extend(['-pass', '1'])
+            optlist.extend(['-x265-params', 'pass=1'])
+
         elif twopass == 2:
             optlist.extend(['-pass', '2'])
+            optlist.extend(['-x265-params', 'pass=2'])
 
         return optlist
 
