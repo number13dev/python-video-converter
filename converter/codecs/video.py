@@ -56,6 +56,7 @@ class VideoCodec(BaseCodec):
         'display_aspect_ratio': float,
         'sample_aspect_ratio': float,
         'rotate': str,
+        'scale': str,
     }
 
     formats_supported = [
@@ -157,6 +158,10 @@ class VideoCodec(BaseCodec):
         super(VideoCodec, self).parse_options(opt)
 
         safe = self.safe_options(opt)
+
+        if 'scale' in safe:
+            safe.pop('width')
+            safe.pop('height')
 
         if 'fps' in safe:
             f = safe['fps']
@@ -347,6 +352,8 @@ class H264Codec(VideoCodec):
             optlist.extend(['-profile:v', safe['profile']])
         if 'tune' in safe:
             optlist.extend(['-tune', safe['tune']])
+        if 'scale' in safe:
+            optlist.extend(['-vf', 'scale=%s' % safe['scale']])
         return optlist
 
 
@@ -409,6 +416,8 @@ class H265Codec(VideoCodec):
             optlist.extend(['-profile:v', safe['profile']])
         if 'tune' in safe:
             optlist.extend(['-tune', safe['tune']])
+        if 'scale' in safe:
+            optlist.extend(['-vf', 'scale=%s' % safe['scale']])
         return optlist
 
 

@@ -46,7 +46,7 @@ class Converter(object):
             name = cls.format_name
             self.formats[name] = cls
 
-    def parse_options(self, opt, twopass=None):
+    def parse_options(self, opt, twopass=None, infile=None):
         """Parse format/codec options and prepare raw ffmpeg option list."""
         if not isinstance(opt, dict):
             raise ConverterError('Invalid output specification')
@@ -129,14 +129,17 @@ class Converter(object):
                   format_options
 
         if twopass == 1:
-            optlist.extend(['-pass', '1'])
+            # optlist.extend(['-pass', '1'])
             if 'libx265' in optlist:
-                optlist.extend(['-x265-params', 'pass=1'])
+                optlist.extend(['-x265-params', 'pass=1:stats=%s.log' % infile])
+                # optlist.extend(['-passlogfile', '%s.log' % infile])
+
 
         elif twopass == 2:
-            optlist.extend(['-pass', '2'])
+            # optlist.extend(['-pass', '2'])
             if 'libx265' in optlist:
-                optlist.extend(['-x265-params', 'pass=2'])
+                optlist.extend(['-x265-params', 'pass=2:stats=%s.log' % infile])
+                # optlist.extend(['-passlogfile', '%s.log' % infile])
 
         return optlist
 
@@ -215,25 +218,30 @@ class Converter(object):
                 null_pipe = "NUL"
             elif os.name == 'posix':
                 null_pipe = '/dev/null'
-            optlist1 = self.parse_options(options, 1)
-            for process_info in self.ffmpeg.convert(infile, null_pipe, optlist1,
-                                                timeout=timeout, preopts=preoptlist):
-                process_info['duration'] = info.format.duration
-                process_info['pass'] = 1
-                yield process_info
-                # yield (float(timecode) / info.format.duration) / 2
+            if not os.path.exists('%s.log' % infile):
+                optlist1 = self.parse_options(options, 1, infile)
+                for process_info in self.ffmpeg.convert(infile, null_pipe, optlist1,
+                                                        timeout=timeout, preopts=preoptlist):
+                    process_info['duration'] = info.format.duration
+                    process_info['pass'] = 1
+                    yield process_info
+                    # yield (float(timecode) / info.format.duration) / 2
 
-            optlist2 = self.parse_options(options, 2)
+            optlist2 = self.parse_options(options, 2, infile)
             for process_info in self.ffmpeg.convert(infile, outfile, optlist2,
-                                                timeout=timeout, preopts=preoptlist):
+                                                    timeout=timeout, preopts=preoptlist):
                 process_info['duration'] = info.format.duration
                 process_info['pass'] = 2
                 yield process_info
                 # yield 0.5 + (float(timecode) / info.format.duration) / 2
+            if os.path.exists('%s.log' % infile):
+                os.remove('%s.log' % infile)
+            if os.path.exists('%s.log.cutree' % infile):
+                os.remove('%s.log.cutree' % infile)
         else:
             optlist = self.parse_options(options, twopass)
             for process_info in self.ffmpeg.convert(infile, outfile, optlist,
-                                                timeout=timeout, preopts=preoptlist):
+                                                    timeout=timeout, preopts=preoptlist):
                 process_info['duration'] = info.format.duration
                 yield process_info
 
