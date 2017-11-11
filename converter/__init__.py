@@ -64,7 +64,7 @@ class Converter(object):
 
         extra_options = []
         if 'extra_options' in opt:
-            extra_options = [opt['extra_options']]
+            extra_options = opt['extra_options']
 
         if 'audio' not in opt and 'video' not in opt:
             raise ConverterError('Neither audio nor video streams requested')
